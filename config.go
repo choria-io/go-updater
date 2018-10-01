@@ -6,6 +6,8 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+
+	"github.com/sirupsen/logrus"
 )
 
 // Config configures the updater
@@ -15,7 +17,7 @@ type Config struct {
 	Version         string
 	CurrentVersion  string
 	PublicKey       []byte
-	Log             *logger.Logger
+	Log             logrus.StdLogger
 	OperatingSystem string
 	Architecture    string
 	Downloader      Downloader

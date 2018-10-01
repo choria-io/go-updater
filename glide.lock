@@ -1,6 +1,18 @@
-hash: fb123c325e690705a6e5520806329ce65c5d24be2d4a735979c9581d243955e2
-updated: 2018-09-21T21:12:58.038099+02:00
-imports: []
+hash: 1535d98a7864de7f1186980e5cdc4374e7cd1bff6139f88838a30c3d33d933f6
+updated: 2018-10-01T13:02:27.787514+02:00
+imports:
+- name: github.com/konsorten/go-windows-terminal-sequences
+  version: b729f2633dfe35f4d1d8a32385f6685610ce1cb5
+- name: github.com/sirupsen/logrus
+  version: a67f783a3814b8729bd2dac5780b5f78f8dbd64d
+- name: golang.org/x/crypto
+  version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
+  subpackages:
+  - ssh/terminal
+- name: golang.org/x/sys
+  version: f7928cfef4d09d1b080aa2b6fd3ca9ba1567c733
+  subpackages:
+  - unix
 testImports:
 - name: github.com/hpcloud/tail
   version: a1dbeea552b7c8df4b542c66073e393de198a800
@@ -49,10 +61,6 @@ testImports:
   - html
   - html/atom
   - html/charset
-- name: golang.org/x/sys
-  version: f7928cfef4d09d1b080aa2b6fd3ca9ba1567c733
-  subpackages:
-  - unix
 - name: golang.org/x/text
   version: e19ae1496984b1c655b8044a65c0300a3c878dd3
   subpackages:
