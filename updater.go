@@ -23,7 +23,7 @@ type Spec struct {
 type Downloader interface {
 	Configure(*Config) error
 	FetchSpec() (*Spec, error)
-	FetchBinary(*Spec) (path string, err error)
+	FetchBinary(spec *Spec, target string) error
 }
 
 var mu = &sync.Mutex{}
@@ -63,7 +63,8 @@ func Apply(opts ...Option) error {
 
 	config.Log.Printf("Starting update process to %s from %s", config.Version, config.SourceRepo)
 
-	newpath, err := config.Downloader.FetchBinary(spec)
+	newpath := config.TargetFile + ".new"
+	err = config.Downloader.FetchBinary(spec, newpath)
 	if err != nil {
 		return fmt.Errorf("download failed: %s", err)
 	}
