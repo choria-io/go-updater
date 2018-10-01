@@ -105,7 +105,7 @@ func CurrentVersion(v string) Option {
 }
 
 // Logger sets the logger to use during updates
-func Logger(l *logger.Logger) Option {
+func Logger(l logrus.StdLogger) Option {
 	return func(c *Config) error {
 		c.Log = l
 		return nil
