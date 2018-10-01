@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
@@ -75,7 +74,7 @@ func (h *HTTPDownloader) FetchBinary(spec *Spec) (string, error) {
 	}
 	defer outf.Close()
 
-	log.Printf("Fetching %s", spec.BinaryURI)
+	h.cfg.Log.Printf("Fetching %s", spec.BinaryURI)
 
 	resp, err := http.Get(spec.BinaryURI.String())
 	if err != nil {
@@ -92,7 +91,7 @@ func (h *HTTPDownloader) FetchBinary(spec *Spec) (string, error) {
 		return "", fmt.Errorf("could not save file: %s", err)
 	}
 
-	log.Printf("Fetched %d bytes from %s", n, spec.BinaryURI.String())
+	h.cfg.Log.Printf("Fetched %d bytes from %s", n, spec.BinaryURI.String())
 
 	tf := fmt.Sprintf("%s.new", h.cfg.TargetFile)
 	err = os.Rename(outf.Name(), tf)
