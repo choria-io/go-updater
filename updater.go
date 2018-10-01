@@ -2,6 +2,7 @@ package updater
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -60,14 +61,14 @@ func Apply(opts ...Option) error {
 		return fmt.Errorf("release %s not found: %s", config.Version, err)
 	}
 
-	log.Printf("Starting update process to %s from %s", config.Version, config.SourceRepo)
+	config.Log.Printf("Starting update process to %s from %s", config.Version, config.SourceRepo)
 
 	newpath, err := config.Downloader.FetchBinary(spec)
 	if err != nil {
 		return fmt.Errorf("download failed: %s", err)
 	}
 
-	log.Printf("Saved downloaded binary to %s", newpath)
+	config.Log.Printf("Saved downloaded binary to %s", newpath)
 
 	if !validateChecksum(newpath, spec) {
 		return fmt.Errorf("downloaded file had an invalid checksum")
@@ -78,7 +79,7 @@ func Apply(opts ...Option) error {
 		return fmt.Errorf("could not create backup: %s", err)
 	}
 
-	log.Printf("Created backup of current binary to %s", backup)
+	config.Log.Printf("Created backup of current binary to %s", backup)
 
 	err = swapNew(newpath, backup, config)
 
@@ -89,7 +90,7 @@ func swapNew(newpath string, backup string, c *Config) error {
 	oldpath := fmt.Sprintf("%s.old", c.TargetFile)
 	err := os.Rename(c.TargetFile, oldpath)
 	if err != nil {
-		return err
+		return errors.New(err.Error())
 	}
 	defer os.Remove(oldpath)
 
@@ -110,7 +111,7 @@ func backupTarget(c *Config) (string, error) {
 	backuppath := fmt.Sprintf("%s.backup", c.TargetFile)
 	stat, err := os.Stat(c.TargetFile)
 	if err != nil {
-		return "", err
+		return "", errors.New(err.Error())
 	}
 
 	_ = os.Remove(backuppath)
