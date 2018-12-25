@@ -13,10 +13,10 @@ import (
 
 // Spec describes an available package update
 type Spec struct {
-	BinaryPath string `json:"binary"`
-	BinaryURI  *url.URL
-	Sha256Hash string `json:"hash"`
-	Signature  string `json:"signature"`
+	BinaryPath string   `json:"binary"`
+	BinaryURI  *url.URL `json:"uri,omitempty"`
+	Sha256Hash string   `json:"hash"`
+	Signature  string   `json:"signature,omitempty"`
 }
 
 // Downloader can download releases from repositories

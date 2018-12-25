@@ -4,21 +4,21 @@ This is a system that can update running software in place from a update server.
 
 The idea is that you might embed this project into your system and use it to do on-demand updates of your binary.
 
-This project does not handle restarts of your running process, in general though a simple `os.Exec()` is enough for that.
+This project does not handle restarts of your running process, in general though a simple *os.Exec()* is enough for that.
 
 ## Features
 
  * Support a basic HTTP(S) server for hosting the repository
- * Verfies checksums of data inside bz2 archives
+ * Verifies checksums of data inside bz2 archives
  * Creates a backup of the binary being replaced
  * Support rollback by returning the backup to the original target
  * Support notifying the caller if the rollback failed
+ * Utility to add a file into a repository
 
 ## Planned features
 
  * Crypto signature validation
  * Cloud object store support
- * Utility to maintain a repository
 
 ## HTTP Repository
 
@@ -50,7 +50,16 @@ The `release.json` looks like this:
 }
 ```
 
-`binary` is simply the path to the file to download and the `hash` is a `sha256` hash of the binary before it was bz2 compressed. 
+*binary* is simply the path to the file to download and the *hash* is a *sha256* hash of the binary before it was bz2 compressed. 
+
+Files can be added to this structure using the `update-repo` utility:
+
+```
+$ go get -u github.com/choria-io/go-updater/cmd/update-repo
+$ update-repo choria --arch amd64 --os linux --version 1.2.3
+```
+
+Valid os and arch combinations can be found using `go tool dist list`.
 
 ## Usage
 
@@ -79,13 +88,13 @@ func main() {
 	}
 
 	err := updater.Apply(opts...)
-    if err != nil {
-        if err := updater.RollbackError(err); err != nil {
-            panic(fmt.Errorf("Update failed and rollback also failed, system in broken state: %s", err))
-        }
+	if err != nil {
+		if err := updater.RollbackError(err); err != nil {
+			panic(fmt.Errorf("Update failed and rollback also failed, system in broken state: %s", err))
+		}
 
-        panic(fmt.Errorf("Update failed: %s", err))
-    }
+		panic(fmt.Errorf("Update failed: %s", err))
+	}
 
 	fmt.Println("Updated self, restarting process.....")
 
