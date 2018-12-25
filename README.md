@@ -52,10 +52,9 @@ The `release.json` looks like this:
 
 *binary* is simply the path to the file to download and the *hash* is a *sha256* hash of the binary before it was bz2 compressed. 
 
-Files can be added to this structure using the `update-repo` utility:
+Files can be added to this structure using the `update-repo` utility that can be downloaded from our releases page:
 
 ```
-$ go get -u github.com/choria-io/go-updater/cmd/update-repo
 $ update-repo choria --arch amd64 --os linux --version 1.2.3
 ```
 
