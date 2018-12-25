@@ -1,0 +1,27 @@
+builds:
+  - binary: update-repo
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+
+archive:
+  format: tar.gz
+  wrap_in_directory: true
+  name_template: "update-repo-v{{.Version}}-{{.Os}}-{{.Arch}}"
+  replacements:
+    amd64: 64bit
+    darwin: macos
+  files:
+    - LICENSE
+    - README.md
+
+release:
+  github:
+    owner: choria-io
+    name: go-updater
+
+  draft: true
+  name_template: "{{.Version}}"
