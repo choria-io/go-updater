@@ -1,3 +1,7 @@
+// Copyright (c) 2018-2022, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package updater
 
 import (
@@ -5,7 +9,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
@@ -15,7 +18,7 @@ import (
 //
 // The update directory structure is:
 //
-//   root/<Version>/<OperatingSystem>/<Architecture>/release.json
+//	root/<Version>/<OperatingSystem>/<Architecture>/release.json
 type HTTPDownloader struct {
 	cfg *Config
 }
@@ -42,7 +45,7 @@ func (h *HTTPDownloader) FetchSpec() (spec *Spec, err error) {
 		return nil, fmt.Errorf("could not fetch release from %s: %s", specuri, resp.Status)
 	}
 
-	specj, err := ioutil.ReadAll(resp.Body)
+	specj, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("could not read repo response: %s", err)
 	}

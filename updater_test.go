@@ -1,8 +1,12 @@
+// Copyright (c) 2018-2022, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package updater
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -24,7 +28,7 @@ var _ = Describe("Updater", func() {
 		It("Should fetch the correct spec", func() {
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				Expect(r.URL.Path).To(Equal("/0.7.0/linux/amd64/release.json"))
-				spec, _ := ioutil.ReadFile("testdata/0.7.0/linux/amd64/release.json")
+				spec, _ := os.ReadFile("testdata/0.7.0/linux/amd64/release.json")
 				fmt.Fprint(w, string(spec))
 			}))
 			defer ts.Close()
@@ -45,13 +49,13 @@ var _ = Describe("Updater", func() {
 	Describe("Apply", func() {
 		It("Should download and apply the update", func() {
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				f, err := ioutil.ReadFile(filepath.Join("testdata", r.URL.Path))
+				f, err := os.ReadFile(filepath.Join("testdata", r.URL.Path))
 				Expect(err).ToNot(HaveOccurred())
 				fmt.Fprint(w, string(f))
 			}))
 			defer ts.Close()
 
-			err := ioutil.WriteFile("testdata/target", []byte("target file"), 0600)
+			err := os.WriteFile("testdata/target", []byte("target file"), 0600)
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove("testdata/target")
 
@@ -61,16 +65,16 @@ var _ = Describe("Updater", func() {
 				OS("linux"),
 				Arch("amd64"),
 				TargetFile("testdata/target"),
-				Logger(log.New(ioutil.Discard, "", 0)),
+				Logger(log.New(io.Discard, "", 0)),
 			)
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove("testdata/target.backup")
 
-			swapped, err := ioutil.ReadFile("testdata/target")
+			swapped, err := os.ReadFile("testdata/target")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(swapped).To(Equal([]byte("testing\n")))
 
-			backup, err := ioutil.ReadFile("testdata/target.backup")
+			backup, err := os.ReadFile("testdata/target.backup")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(backup).To(Equal([]byte("target file")))
 		})
@@ -83,7 +87,7 @@ var _ = Describe("Updater", func() {
 		})
 
 		It("Should attempt to recover from renaming the new to the target and wrap the recovery error in a rollback error", func() {
-			err := ioutil.WriteFile("testdata/source", []byte("old file"), 0600)
+			err := os.WriteFile("testdata/source", []byte("old file"), 0600)
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove("testdata/source")
 
@@ -93,39 +97,39 @@ var _ = Describe("Updater", func() {
 		})
 
 		It("Should recover from rename errors by copying the backup data", func() {
-			err := ioutil.WriteFile("testdata/source", []byte("old file"), 0600)
+			err := os.WriteFile("testdata/source", []byte("old file"), 0600)
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove("testdata/source")
 
-			err = ioutil.WriteFile("testdata/backup", []byte("backup file"), 0600)
+			err = os.WriteFile("testdata/backup", []byte("backup file"), 0600)
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove("testdata/backup")
 
 			err = swapNew("testdata/new", "testdata/backup", &Config{TargetFile: "testdata/source"})
 			Expect(err).To(HaveOccurred())
 
-			recovered, err := ioutil.ReadFile("testdata/source")
+			recovered, err := os.ReadFile("testdata/source")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(recovered).To(Equal([]byte("backup file")))
 		})
 
 		It("Should swap the file", func() {
-			err := ioutil.WriteFile("testdata/source", []byte("old file"), 0600)
+			err := os.WriteFile("testdata/source", []byte("old file"), 0600)
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove("testdata/source")
 
-			err = ioutil.WriteFile("testdata/backup", []byte("backup file"), 0600)
+			err = os.WriteFile("testdata/backup", []byte("backup file"), 0600)
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove("testdata/backup")
 
-			err = ioutil.WriteFile("testdata/new", []byte("new file"), 0600)
+			err = os.WriteFile("testdata/new", []byte("new file"), 0600)
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove("testdata/new")
 
 			err = swapNew("testdata/new", "testdata/backup", &Config{TargetFile: "testdata/source"})
 			Expect(err).ToNot(HaveOccurred())
 
-			swapped, err := ioutil.ReadFile("testdata/source")
+			swapped, err := os.ReadFile("testdata/source")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(swapped).To(Equal([]byte("new file")))
 		})
@@ -138,7 +142,7 @@ var _ = Describe("Updater", func() {
 		})
 
 		It("Should create the backup", func() {
-			err := ioutil.WriteFile("testdata/source", []byte("example data"), 0600)
+			err := os.WriteFile("testdata/source", []byte("example data"), 0600)
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove("testdata/source")
 
@@ -147,9 +151,9 @@ var _ = Describe("Updater", func() {
 			defer os.Remove(out)
 			Expect(out).To(Equal("testdata/source.backup"))
 
-			src, err := ioutil.ReadFile("testdata/source")
+			src, err := os.ReadFile("testdata/source")
 			Expect(err).ToNot(HaveOccurred())
-			copy, err := ioutil.ReadFile(out)
+			copy, err := os.ReadFile(out)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(src).To(Equal(copy))
 		})

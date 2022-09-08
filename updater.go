@@ -1,3 +1,7 @@
+// Copyright (c) 2018-2022, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package updater
 
 import (
