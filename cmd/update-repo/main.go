@@ -10,8 +10,8 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	updater "github.com/choria-io/go-updater"
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
+	"github.com/choria-io/fisk"
+	"github.com/choria-io/go-updater"
 )
 
 var (
@@ -24,7 +24,7 @@ var (
 )
 
 func main() {
-	app := kingpin.New("update-repo", "The Choria Update repository manager")
+	app := fisk.New("update-repo", "The Choria Update repository manager")
 	app.Arg("binary", "The binary to add to the repository").Required().ExistingFileVar(&binary)
 	app.Flag("version", "The version this binary represents").Required().StringVar(&version)
 
@@ -33,7 +33,7 @@ func main() {
 	app.Flag("repo", "The path to the repository").Default(".").StringVar(&root)
 	app.Flag("force", "Overwrite existing files").BoolVar(&force)
 
-	kingpin.MustParse(app.Parse(os.Args[1:]))
+	fisk.MustParse(app.Parse(os.Args[1:]))
 
 	validateBinary()
 	validateRepo()
@@ -51,46 +51,46 @@ func main() {
 	if !force {
 		_, err := os.Stat(compressedfile)
 		if err == nil {
-			kingpin.Fatalf("target %s already exist", compressedfile)
+			fisk.Fatalf("target %s already exist", compressedfile)
 		}
 	}
 
 	err := os.MkdirAll(targetdir, 0755)
-	kingpin.FatalIfError(err, "could not create target '%s': %s", targetdir, err)
+	fisk.FatalIfError(err, "could not create target '%s': %s", targetdir, err)
 
 	err = copyfile(binary, targetfile)
-	kingpin.FatalIfError(err, "could not copy binary '%s': %s", binary, err)
+	fisk.FatalIfError(err, "could not copy binary '%s': %s", binary, err)
 
 	if spec.Sha256Hash != fileSum(targetfile) {
 		os.Remove(targetfile)
-		kingpin.Fatalf("file copy operation did not produce the same checksum")
+		fisk.Fatalf("file copy operation did not produce the same checksum")
 	}
 
 	err = compress(targetfile)
-	kingpin.FatalIfError(err, "could not compress '%s': %s", targetfile, err)
+	fisk.FatalIfError(err, "could not compress '%s': %s", targetfile, err)
 
 	_, err = os.Stat(compressedfile)
-	kingpin.FatalIfError(err, "compression did not create %s", err)
+	fisk.FatalIfError(err, "compression did not create %s", err)
 
 	spec.BinaryPath = fname + ".bz2"
 
 	j, err := json.Marshal(spec)
-	kingpin.FatalIfError(err, "could not json encode update spec: %s", err)
+	fisk.FatalIfError(err, "could not json encode update spec: %s", err)
 
 	err = ioutil.WriteFile(spectarget, j, 0644)
-	kingpin.FatalIfError(err, "could not write spec '%s': %s", spectarget, err)
+	fisk.FatalIfError(err, "could not write spec '%s': %s", spectarget, err)
 
 	fmt.Printf("Copied %s to %s\n", binary, compressedfile)
 }
 
 func fileSum(path string) (sum string) {
 	f, err := os.Open(path)
-	kingpin.FatalIfError(err, "could not open binary '%s': %s", path, err)
+	fisk.FatalIfError(err, "could not open binary '%s': %s", path, err)
 	defer f.Close()
 
 	h := sha256.New()
 	_, err = io.Copy(h, f)
-	kingpin.FatalIfError(err, "could not read binary '%s': %s", path, err)
+	fisk.FatalIfError(err, "could not read binary '%s': %s", path, err)
 
 	return fmt.Sprintf("%x", h.Sum(nil))
 }
@@ -109,14 +109,14 @@ func compress(path string) error {
 
 func validateBinary() {
 	_, err := os.Stat(binary)
-	kingpin.FatalIfError(err, "the binary '%s' does not exist", binary)
+	fisk.FatalIfError(err, "the binary '%s' does not exist", binary)
 }
 
 func validateRepo() {
 	stat, err := os.Stat(root)
-	kingpin.FatalIfError(err, "the repository '%s' does not exist", root)
+	fisk.FatalIfError(err, "the repository '%s' does not exist", root)
 	if !stat.IsDir() {
-		kingpin.Fatalf("the repository '%s' is not a directory", root)
+		fisk.Fatalf("the repository '%s' is not a directory", root)
 	}
 }
 
