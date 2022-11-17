@@ -18,25 +18,30 @@ import (
 )
 
 var (
-	version string
-	osName  string
-	arch    string
-	root    string
-	binary  string
-	force   bool
+	version      string
+	osName       string
+	arch         string
+	root         string
+	binary       string
+	uncompressed bool
+	force        bool
 )
 
 func main() {
 	app := fisk.New("update-repo", "The Choria Update repository manager")
+	app.UsageTemplate(fisk.CompactMainUsageTemplate)
+	app.ErrorUsageTemplate(fisk.CompactMainUsageTemplate)
+
 	app.Arg("binary", "The binary to add to the repository").Required().ExistingFileVar(&binary)
 	app.Flag("version", "The version this binary represents").Required().StringVar(&version)
 
 	app.Flag("arch", "The architecture to add the binary to").Required().StringVar(&arch)
 	app.Flag("os", "The operating system to add the binary to").Required().StringVar(&osName)
 	app.Flag("repo", "The path to the repository").Default(".").StringVar(&root)
-	app.Flag("force", "Overwrite existing files").BoolVar(&force)
+	app.Flag("uncompressed", "Additionally store the file uncompressed in the repository").UnNegatableBoolVar(&uncompressed)
+	app.Flag("force", "Overwrite existing files").UnNegatableBoolVar(&force)
 
-	fisk.MustParse(app.Parse(os.Args[1:]))
+	app.MustParseWithUsage(os.Args[1:])
 
 	validateBinary()
 	validateRepo()
@@ -101,11 +106,19 @@ func fileSum(path string) (sum string) {
 func compress(path string) error {
 	var cmd *exec.Cmd
 
+	args := []string{"bzip2"}
+
 	if force {
-		cmd = exec.Command("bzip2", "-f", path)
-	} else {
-		cmd = exec.Command("bzip2", path)
+		args = append(args, "-f")
 	}
+
+	if uncompressed {
+		args = append(args, "-k")
+	}
+
+	args = append(args, path)
+
+	cmd = exec.Command(args[0], args[1:]...)
 
 	return cmd.Run()
 }
